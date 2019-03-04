@@ -20,10 +20,10 @@ def selection(start, investement_type, i, sharpe_ratio, std, beta, treynor_ratio
         (datetime.strptime(start, '%Y-%m') - relativedelta(years=+1, months=-i)).timetuple())
     end_unix = time.mktime(
         (datetime.strptime(start, '%Y-%m') - relativedelta(days=+1, months=-i)).timetuple())
-    
+
     if investement_type[0] == "不分類":
         data_df = pd.read_sql(sql='select * from price where date between ? and ? order by date asc',
-                con=engine, params=[start_unix, end_unix])
+                              con=engine, params=[start_unix, end_unix])
     elif investement_type[0] == "境內":
         data_df = pd.read_sql(sql='SELECT * FROM price WHERE EXISTS\
                 (SELECT fund_id FROM domestic_information\
@@ -35,9 +35,6 @@ def selection(start, investement_type, i, sharpe_ratio, std, beta, treynor_ratio
                     WHERE subject_matter == ? and price.date between ? and ?\
                     and fund_id == price.fund_id)', con=engine, params=[investement_type[1], start_unix, end_unix])
 
-
-    # data_df = pd.read_sql(sql='select * from price where date between ? and ? order by date asc',
-    #                       con=engine, params=[start_unix, end_unix])
     data_df = data_df.pivot(index='date', columns='fund_id', values='nav')
     data_df = data_df.fillna(method="ffill")
     data_df = data_df.fillna(method="bfill")
@@ -62,6 +59,7 @@ def selection(start, investement_type, i, sharpe_ratio, std, beta, treynor_ratio
     data_df = data_df.T[data_df.corr()["0050 元大台灣50"] *
                         data_df.std() / data_df.std()[0] < beta].T
     data_df = data_df.corr()
+    data_df = 1 - data_df * 0.5 - 0.5
 
     camp = pd.DataFrame(AgglomerativeClustering(n_clusters=4).fit(
         data_df).labels_, index=data_df.index, columns=['label'])
@@ -95,27 +93,31 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, mo
         data_df = data_df.fillna(method="ffill")
         data_df = data_df.fillna(method="bfill")
 
-        if strategy == "regular saving plan":
+        if strategy == 2:
             hold += (buy_ratio * money / data_df[choose].iloc[0].T).values
             profit = pd.concat(
                 [profit, (data_df[choose] * hold).T.sum() / (money*(i+1))], axis=0)
         else:
             if i == 0:
                 hold = (buy_ratio * money / data_df[choose].iloc[0].T).values
-            if strategy == "constant mix strategy" or strategy == "dynamic asset allocation strategy":
-                if i % frequency == frequency - 1:
-                    temp = (hold * data_df[choose].iloc[0]).sum()
-                    if strategy == "dynamic asset allocation strategy":
-                        choose = selection(start, investement_type, i, sharpe_ratio,
-                                           std, beta, treynor_ratio, choose)
-                    hold = (buy_ratio * temp /
-                            data_df[choose].iloc[0].T).values
+            elif strategy != 1 and i % frequency == frequency - 1:
+                temp = (hold * data_df[choose].iloc[0]).sum()
+                if strategy == 3:
+                    choose = selection(start, investement_type, i, sharpe_ratio,
+                                       std, beta, treynor_ratio, choose)
+                hold = (buy_ratio * temp /
+                        data_df[choose].iloc[0].T).values
             profit = pd.concat(
                 [profit, (data_df[choose] * hold).T.sum() / money], axis=0)
 
+        for j, ch in enumerate(choose):
+            interest = pd.read_sql(sql='select sum(interest) from interest where date between ? and ? and fund_id == ? order by date asc',
+                                   con=engine, params=[start_unix, end_unix, ch])
+            hold[j] += (interest * hold[j] /
+                        data_df[ch].iloc[-1]).fillna(0).loc[0][0]
+
         data_df = pd.concat([data_df[choose], data_df.T.sample(
             n=296).T], axis=1).T.drop_duplicates().T
-
         data_df = data_df.pct_change()
         data_df = data_df.corr()
         data_df = 1 - data_df * 0.5 - 0.5

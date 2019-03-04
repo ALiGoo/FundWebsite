@@ -5,6 +5,7 @@ import numpy as np
 
 mds_img = {}
 
+
 def test(request):
     if request.method == "POST":
         start = "-".join([request.POST['start_year'],
@@ -16,15 +17,16 @@ def test(request):
         beta = float(request.POST['beta'])
         treynor_ratio = float(request.POST['treynor_ratio'])
         money = int(request.POST['money'])
-        buy_ratio = np.asarray((0,0,0,0), dtype=np.float)
+        buy_ratio = np.asarray((0, 0, 0, 0), dtype=np.float)
         for i in range(4):
             buy_ratio[i] = float(request.POST['buy_ratio' + str(i)])
-        strategy = request.POST['strategy']
+        strategy = int(request.POST['strategy'])
         frequency = int(request.POST['frequency'])
 
         global mds_img
-        profit_img, mds_img = img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, money, buy_ratio, strategy, frequency)
-        return render(request, "test_show.html", {'profit_img':profit_img, 'mds_img':mds_img[start]})
+        profit_img, mds_img = img(start, end, investement_type, sharpe_ratio,
+                                  std, beta, treynor_ratio, money, buy_ratio, strategy, frequency)
+        return render(request, "test_show.html", {'profit_img': profit_img, 'mds_img': mds_img[start]})
     return render(request, "test.html", locals())
 
 
