@@ -15,11 +15,11 @@ from bokeh.resources import CDN
 engine = create_engine('sqlite:///fund.db')
 
 
-def selection(start, investement_type, i, sharpe_ratio, std, beta, treynor_ratio, choose):
+def selection(start, btest_time, investement_type, i, sharpe_ratio, std, beta, treynor_ratio, choose):
     start_unix = time.mktime(
-        (datetime.strptime(start, '%Y-%m') - relativedelta(years=+1, months=-i)).timetuple())
+        (start - relativedelta(months=btest_time-i)).timetuple())
     end_unix = time.mktime(
-        (datetime.strptime(start, '%Y-%m') - relativedelta(days=+1, months=-i)).timetuple())
+        (start - relativedelta(days=+1, months=-i)).timetuple())
 
     if investement_type[0] == "不分類":
         data_df = pd.read_sql(sql='select * from price where date between ? and ? order by date asc',
@@ -28,36 +28,50 @@ def selection(start, investement_type, i, sharpe_ratio, std, beta, treynor_ratio
         data_df = pd.read_sql(sql='SELECT * FROM price WHERE EXISTS\
                 (SELECT fund_id FROM domestic_information\
                 WHERE investment_target == ? and price.date between ? and ?\
-                and fund_id == price.fund_id)', con=engine, params=[investement_type[1], start_unix, end_unix])
+                and fund_id == price.fund_id)',
+                              con=engine, params=[investement_type[1], start_unix, end_unix])
     else:
         data_df = pd.read_sql(sql='SELECT * FROM price WHERE EXISTS\
                     (SELECT fund_id FROM overseas_information\
                     WHERE subject_matter == ? and price.date between ? and ?\
-                    and fund_id == price.fund_id)', con=engine, params=[investement_type[1], start_unix, end_unix])
+                    and fund_id == price.fund_id)',
+                              con=engine, params=[investement_type[1], start_unix, end_unix])
+
+    if "0050 元大台灣50" not in data_df.fund_id.values:
+        data_df = pd.concat([data_df, pd.read_sql(
+            sql='select * from price where fund_id = "0050 元大台灣50" and date between ? and ? order by date asc',
+            con=engine, params=[start_unix, end_unix])])
 
     data_df = data_df.pivot(index='date', columns='fund_id', values='nav')
     data_df = data_df.fillna(method="ffill")
     data_df = data_df.fillna(method="bfill")
 
-    data_df = data_df.T[(((data_df.iloc[-1] - data_df.iloc[0]) /
-                          data_df.iloc[0]) - 0.01) / data_df.std(ddof=1) > sharpe_ratio].T
-    data_df = data_df.T[data_df.std(ddof=1) < std].T
+    indicator = {'Rp': (data_df - data_df.iloc[0]) / data_df.iloc[0]}
+    indicator['σp'] = indicator['Rp'].std(ddof=1)
+    indicator['ρpm'] = indicator['Rp'].corr()["0050 元大台灣50"]
+    indicator['σm'] = indicator['σp']["0050 元大台灣50"]
+    indicator['βp'] = indicator['ρpm'] * indicator['σp'] / indicator['σm']
+    bl = data_df.iloc[0] > 0
 
-    if "0050 元大台灣50" not in data_df.columns:
-        data_df.insert(0, "0050 元大台灣50",
-                       pd.read_sql(sql='select nav,date from price where fund_id = "0050 元大台灣50" and date between ? and ? order by date asc',
-                                   con=engine, params=[start_unix, end_unix], index_col="date"))
-    data_df = data_df.T[(((data_df.iloc[-1] - data_df.iloc[0]) / data_df.iloc[0]) - 0.01) / (
-        data_df.pct_change().corr()["0050 元大台灣50"] * data_df.std() / data_df.std()[0]) > treynor_ratio].T
+    if sharpe_ratio != "":
+        sharpe_ratio = float(sharpe_ratio)
+        bl = bl & ((indicator['Rp'].iloc[-1] - 0.01) /
+                   indicator['σp'] > sharpe_ratio)
 
-    if "0050 元大台灣50" not in data_df.columns:
-        data_df.insert(0, "0050 元大台灣50",
-                       pd.read_sql(sql='select nav,date from price where fund_id = "0050 元大台灣50" and date between ? and ? order by date asc',
-                                   con=engine, params=[start_unix, end_unix], index_col="date"))
+    if std != "":
+        std = float(std)
+        bl = bl & (data_df.std(ddof=1) < std)
 
-    data_df = data_df.pct_change()
-    data_df = data_df.T[data_df.corr()["0050 元大台灣50"] *
-                        data_df.std() / data_df.std()[0] < beta].T
+    if beta != "":
+        beta = float(beta)
+        bl = bl & (indicator['βp'] < beta)
+
+    if treynor_ratio != "":
+        treynor_ratio = float(treynor_ratio)
+        bl = bl & ((indicator['Rp'].iloc[-1] - 0.01) /
+                   indicator['βp'] > treynor_ratio)
+
+    data_df = data_df.T[bl].T
     data_df = data_df.corr()
     data_df = 1 - data_df * 0.5 - 0.5
 
@@ -74,19 +88,39 @@ def selection(start, investement_type, i, sharpe_ratio, std, beta, treynor_ratio
     return choose
 
 
-def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, money, buy_ratio, strategy, frequency):
+def profit_indicator(profit, start, end, choose_nav):
+    d0050 = pd.read_sql(sql='select nav,date from price where fund_id = "0050 元大台灣50" and date between ? and ? order by date asc',
+                        con=engine,
+                        params=[time.mktime(start.timetuple()),
+                                time.mktime(end.timetuple())],
+                        index_col="date")
+    d0050 = ((d0050 - d0050.iloc[0]) / d0050.iloc[0])
+
+    indicator = {}
+    indicator['σp'] = profit.std(ddof=1, axis=0)[0]
+    indicator['ρpm'] = pd.concat([profit, d0050], axis=1).corr().iloc[0][1]
+    indicator['σm'] = d0050.std(ddof=1)[0]
+    indicator['βp'] = indicator['ρpm'] * indicator['σp'] / indicator['σm']
+
+    return {'sharpe_ratio': ((profit.iloc[-1] - 0.01) / indicator['σp'])[0],
+            "std": choose_nav.std().mean(),
+            "beta": indicator['βp'],
+            "treynor_ratio": ((profit.iloc[-1] - 0.01) / indicator['βp'])[0]}
+
+
+def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, btest_time, money, buy_ratio, strategy, frequency):
     choose = np.asarray([" ", " ", " ", " "], dtype='<U32')
-    choose = selection(start, investement_type, 0, sharpe_ratio, std,
+    choose = selection(start, btest_time, investement_type, 0, sharpe_ratio, std,
                        beta, treynor_ratio, choose)
     profit = pd.DataFrame()
-    hold = np.zeros([4], dtype=np.float)
+    choose_nav = pd.DataFrame()
+    hold = np.zeros((4), dtype=np.float)
     mds_img = {}
 
-    for i in range((datetime.strptime("2017-12", "%Y-%m").month - datetime.strptime("2017-01", "%Y-%m").month)+1):
-        start_unix = time.mktime(
-            (datetime.strptime(start, '%Y-%m') + relativedelta(months=i)).timetuple())
-        end_unix = time.mktime((datetime.strptime(
-            start, '%Y-%m') + relativedelta(months=i+1, days=-1)).timetuple())
+    for i in range(12 * (end.year - start.year) + (end.month - start.month) + 1):
+        start_unix = time.mktime((start + relativedelta(months=i)).timetuple())
+        end_unix = time.mktime(
+            (start + relativedelta(months=i+1, days=-1)).timetuple())
         data_df = pd.read_sql(sql='select * from price where date between ? and ? order by date asc',
                               con=engine, params=[start_unix, end_unix])
         data_df = data_df.pivot(index='date', columns='fund_id', values='nav')
@@ -103,12 +137,14 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, mo
             elif strategy != 1 and i % frequency == frequency - 1:
                 temp = (hold * data_df[choose].iloc[0]).sum()
                 if strategy == 3:
-                    choose = selection(start, investement_type, i, sharpe_ratio,
+                    choose = selection(start, btest_time, investement_type, i, sharpe_ratio,
                                        std, beta, treynor_ratio, choose)
                 hold = (buy_ratio * temp /
                         data_df[choose].iloc[0].T).values
             profit = pd.concat(
                 [profit, (data_df[choose] * hold).T.sum() / money], axis=0)
+
+        choose_nav = pd.concat([choose_nav, data_df[choose]], sort=False)
 
         for j, ch in enumerate(choose):
             interest = pd.read_sql(sql='select sum(interest) from interest where date between ? and ? and fund_id == ? order by date asc',
@@ -141,12 +177,18 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, mo
         p.y_range = Range1d(-0.6, 0.6)
         p.circle(x='x', y='y', color='color', size=6.5, source=source)
         script, div = components(p, CDN)
-        mds_img[(datetime.strptime(start, '%Y-%m') + relativedelta(months=i)
+        mds_img[(start + relativedelta(months=i)
                  ).strftime('%Y-%m')] = {'script': script, 'div': div}
 
     profit = profit.rename(columns={0: "profit"})
     profit["profit"] = (profit["profit"]-1) * 100
     profit.index.name = "date"
+    
+    indicator = profit_indicator(profit, start, end, choose_nav)
+    # indicator['money'] = (hold * data_df.iloc[-1][choose]).sum()
+    indicator['profit'] = profit.iloc[-1][0]
+
+
     profit.index = profit.index + 28800
     profit.index = pd.to_datetime(profit.index, unit='s')
 
@@ -157,4 +199,4 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, mo
                           formatters={'date': 'datetime', }, mode='vline'))
     script, div = components(p, CDN)
     profit_img = {'script': script, 'div': div}
-    return profit_img, mds_img
+    return profit_img, mds_img, indicator

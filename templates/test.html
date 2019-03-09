@@ -111,21 +111,22 @@
         <option value="境外 其他">其他</option>
         <option value="境外 能源股票">能源股票</option>
     </select>
-    <br>Sharpe Ratio: <input type="value" name="sharpe_ratio" value="0"><br>
-    standard deviation <input type="value" name="std" value="1"><br>
-    Beta: <input type="value" name="beta" value="1"><br>
-    Treynor Ratio: <input type="value" name="treynor_ratio" value="0"><br>
-    Money: <input type="value" name="money" value="100000"><br>
-    Buy Ratio: <input type="value" name="buy_ratio0" value="0.25">
+    <br>夏普指標: <input type="value" name="sharpe_ratio"><br>
+    標準差: <input type="value" name="std"><br>
+    Beta值: <input type="value" name="beta"><br>
+    Treynor指數: <input type="value" name="treynor_ratio"><br>
+    回挑選時長（月）: <input type="value" name="btest_time"><br>
+    投入資金: <input type="value" name="money" value="100000"><br>
+    購買權重: <input type="value" name="buy_ratio0" value="0.25">
     <input type="value" name="buy_ratio1" value="0.25">
     <input type="value" name="buy_ratio2" value="0.25">
     <input type="value" name="buy_ratio3" value="0.25"><br>
-    <input type="radio" name="strategy" value="0"> 0. Buy and hold strategy <br>
-    <input type="radio" name="strategy" value="1"> 1. Constant mix strategy <br>
-    <input type="radio" name="strategy" value="2"> 2. Regular saving plan <br>
-    <input type="radio" name="strategy" value="3"> 3. Dynamic asset allocation strategy
+    <input type="radio" name="strategy" value="0"> 0. 買入持有策略 <br>
+    <input type="radio" name="strategy" value="1"> 1. 固定比例投資策略 <br>
+    <input type="radio" name="strategy" value="2"> 2. 定期定額 <br>
+    <input type="radio" name="strategy" value="3"> 3. 動態資產配置策略
     <br>
-    Frequency:<input type="value" name="frequency"><br>
+    執行頻率:<input type="value" name="frequency"><br>
     <input type="submit" name="button" value="送出">
   </form>
 </body>
