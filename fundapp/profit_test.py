@@ -46,17 +46,17 @@ def selection(start, btest_time, investement_type, i, sharpe_ratio, std, beta, t
     data_df = data_df.fillna(method="ffill")
     data_df = data_df.fillna(method="bfill")
 
-    indicator = {'Rp': (data_df - data_df.iloc[0]) / data_df.iloc[0]}
-    indicator['σp'] = indicator['Rp'].std(ddof=1)
-    indicator['ρpm'] = indicator['Rp'].corr()["0050 元大台灣50"]
-    indicator['σm'] = indicator['σp']["0050 元大台灣50"]
-    indicator['βp'] = indicator['ρpm'] * indicator['σp'] / indicator['σm']
+    indicator_Rp = (data_df - data_df.iloc[0]) / data_df.iloc[0]
+    indicator_σp = indicator_Rp.std(ddof=1)
+    indicator_ρpm = indicator_Rp.corr()["0050 元大台灣50"]
+    indicator_σm = indicator_σp["0050 元大台灣50"]
+    indicator_βp = indicator_ρpm * indicator_σp / indicator_σm
     bl = data_df.iloc[0] > 0
 
     if sharpe_ratio != "":
         sharpe_ratio = float(sharpe_ratio)
-        bl = bl & ((indicator['Rp'].iloc[-1] - 0.01) /
-                   indicator['σp'] > sharpe_ratio)
+        bl = bl & ((indicator_Rp.iloc[-1] - 0.01) /
+                   indicator_σp > sharpe_ratio)
 
     if std != "":
         std = float(std)
@@ -64,12 +64,12 @@ def selection(start, btest_time, investement_type, i, sharpe_ratio, std, beta, t
 
     if beta != "":
         beta = float(beta)
-        bl = bl & (indicator['βp'] < beta)
+        bl = bl & (indicator_βp < beta)
 
     if treynor_ratio != "":
         treynor_ratio = float(treynor_ratio)
-        bl = bl & ((indicator['Rp'].iloc[-1] - 0.01) /
-                   indicator['βp'] > treynor_ratio)
+        bl = bl & ((indicator_Rp.iloc[-1] - 0.01) /
+                   indicator_βp > treynor_ratio)
 
     data_df = data_df.T[bl].T
     data_df = data_df.corr()
@@ -96,16 +96,15 @@ def profit_indicator(profit, start, end, choose_nav):
                         index_col="date")
     d0050 = ((d0050 - d0050.iloc[0]) / d0050.iloc[0])
 
-    indicator = {}
-    indicator['σp'] = profit.std(ddof=1, axis=0)[0]
-    indicator['ρpm'] = pd.concat([profit, d0050], axis=1).corr().iloc[0][1]
-    indicator['σm'] = d0050.std(ddof=1)[0]
-    indicator['βp'] = indicator['ρpm'] * indicator['σp'] / indicator['σm']
+    indicator_σp = profit.std(ddof=1, axis=0)[0]
+    indicator_ρpm = pd.concat([profit, d0050], axis=1).corr().iloc[0][1]
+    indicator_σm = d0050.std(ddof=1)[0]
+    indicator_βp = indicator_ρpm * indicator_σp / indicator_σm
 
-    return {'sharpe_ratio': ((profit.iloc[-1] - 0.01) / indicator['σp'])[0],
+    return {'sharpe_ratio': ((profit.iloc[-1] - 0.01) / indicator_σp)[0],
             "std": choose_nav.std().mean(),
-            "beta": indicator['βp'],
-            "treynor_ratio": ((profit.iloc[-1] - 0.01) / indicator['βp'])[0]}
+            "beta": indicator_βp,
+            "treynor_ratio": ((profit.iloc[-1] - 0.01) / indicator_βp)[0]}
 
 
 def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, btest_time, money, buy_ratio, strategy, frequency):
@@ -171,7 +170,7 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
         TOOLTIPS = [
             ("fund_id", "@name"),
         ]
-        p = figure(plot_width=700, plot_height=700, tooltips=TOOLTIPS,
+        p = figure(plot_width=1000, plot_height=1000, tooltips=TOOLTIPS,
                    title="MDS", toolbar_location=None, tools="")
         p.x_range = Range1d(-0.6, 0.6)
         p.y_range = Range1d(-0.6, 0.6)
@@ -185,15 +184,14 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
     profit.index.name = "date"
     
     indicator = profit_indicator(profit, start, end, choose_nav)
-    # indicator['money'] = (hold * data_df.iloc[-1][choose]).sum()
+    indicator['money'] = (hold * choose_nav.iloc[-1][choose]).sum()
     indicator['profit'] = profit.iloc[-1][0]
-
 
     profit.index = profit.index + 28800
     profit.index = pd.to_datetime(profit.index, unit='s')
 
     p = figure(x_axis_type="datetime", plot_width=1500,
-               plot_height=500, title="Profit", toolbar_location=None, tools="")
+               plot_height=300, title="Profit", toolbar_location=None, tools="")
     p.line(x='date', y='profit', line_width=3, source=profit)
     p.add_tools(HoverTool(tooltips=[("date", "@date{%F}"), ("profit", "@profit%")],
                           formatters={'date': 'datetime', }, mode='vline'))
