@@ -115,6 +115,7 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
     choose_nav = pd.DataFrame()
     hold = np.zeros((4), dtype=np.float)
     mds_img = {}
+    mean_similarity = 0
 
     for i in range(12 * (end.year - start.year) + (end.month - start.month) + 1):
         start_unix = time.mktime((start + relativedelta(months=i)).timetuple())
@@ -157,7 +158,10 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
         data_df = data_df.corr()
         data_df = 1 - data_df * 0.5 - 0.5
         data_df = data_df.fillna(-1)
-
+        mean_similarity += data_df[choose].T[choose].iloc[0].sum() / 3
+        if i != 0:
+            mean_similarity /=2
+        
         color = np.asarray(["yellow" for i in range(len(data_df))])
         color[0:4] = "purple"
         mds = MDS(n_components=2, dissimilarity='precomputed').fit(
@@ -197,4 +201,4 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
                           formatters={'date': 'datetime', }, mode='vline'))
     script, div = components(p, CDN)
     profit_img = {'script': script, 'div': div}
-    return profit_img, mds_img, indicator
+    return profit_img, mds_img, indicator, mean_similarity
