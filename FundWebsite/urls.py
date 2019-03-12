@@ -8,4 +8,5 @@ urlpatterns = [
     path('test/', test),
     path('mds_img/', mds),
     path('index/', index),
+    # path('test//',)
 ]

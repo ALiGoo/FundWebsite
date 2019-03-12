@@ -17,7 +17,7 @@
 
 <body>
 
-  <div>夏普指標: {{profit_indicator.sharpe_ratio}}</div>
+  <!-- <div>夏普指標: {{profit_indicator.sharpe_ratio}}</div>
   <div>標準差: {{profit_indicator.std}}</div>
   <div>beta值: {{profit_indicator.beta}}</div>
   <div>Treynor指數: {{profit_indicator.treynor_ratio}}</div>
@@ -32,6 +32,24 @@
   <div class="mds" id="mds">
     {{ mds_img.div|safe }}
     {{ mds_img.script|safe }}
+  </div> -->
+
+
+  <div>夏普指標: {{response_data.sharpe_ratio}}</div>
+  <div>標準差: {{response_data.std}}</div>
+  <div>beta值: {{response_data.beta}}</div>
+  <div>Treynor指數: {{response_data.treynor_ratio}}</div>
+  <div>期末金額: {{response_data.money}}</div>
+  <div>最後收益: {{response_data.profit}}%</div>
+  <div>平均距離: {{response_data.mean_similarity}}</div>
+  <div class="" id="profit">
+    {{ response_data.profit_img.div|safe }}
+    {{ response_data.profit_img.script|safe }}
+  </div>
+
+  <div class="mds" id="mds">
+    <!-- {{ mds_img.div|safe }}
+    {{ mds_img.script|safe }} -->
   </div>
 
   <script src="{% static "javascript/test_show.js" %}"></script>

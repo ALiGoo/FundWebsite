@@ -1,7 +1,7 @@
 $(function () {
-  var mds_img;
+  var response_data;
   $.getJSON('/mds_img/', function (ret) {
-    mds_img = ret;
+    response_data = ret;
   })
 
   var temp = ''
@@ -10,7 +10,7 @@ $(function () {
     mds_img_idx = mds_img_idx.children().find('span').html()
     mds_img_idx = mds_img_idx.substr(0, 7)
     if (temp != mds_img_idx) {
-      $("#mds").html(mds_img[mds_img_idx].div + mds_img[mds_img_idx].script);
+      $("#mds").html(response_data[mds_img_idx].div + response_data[mds_img_idx].script);
       temp = mds_img_idx;
     }
   })

@@ -13,6 +13,7 @@ from bokeh.plotting import ColumnDataSource, figure
 from bokeh.resources import CDN
 
 engine = create_engine('sqlite:///fund.db')
+response_data = {}
 
 
 def selection(start, btest_time, investement_type, i, sharpe_ratio, std, beta, treynor_ratio, choose):
@@ -101,10 +102,16 @@ def profit_indicator(profit, start, end, choose_nav):
     indicator_σm = d0050.std(ddof=1)[0]
     indicator_βp = indicator_ρpm * indicator_σp / indicator_σm
 
-    return {'sharpe_ratio': ((profit.iloc[-1] - 0.01) / indicator_σp)[0],
-            "std": choose_nav.std().mean(),
-            "beta": indicator_βp,
-            "treynor_ratio": ((profit.iloc[-1] - 0.01) / indicator_βp)[0]}
+    global response_data
+    response_data['sharpe_ratio'] = ((profit.iloc[-1] - 0.01) / indicator_σp)[0]
+    response_data['std'] = choose_nav.std().mean()
+    response_data['beta'] = indicator_βp
+    response_data['treynor_ratio'] = ((profit.iloc[-1] - 0.01) / indicator_βp)[0]
+
+    # return {'sharpe_ratio': ((profit.iloc[-1] - 0.01) / indicator_σp)[0],
+    #         "std": choose_nav.std().mean(),
+    #         "beta": indicator_βp,
+    #         "treynor_ratio": ((profit.iloc[-1] - 0.01) / indicator_βp)[0]}
 
 
 def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, btest_time, money, buy_ratio, strategy, frequency):
@@ -114,8 +121,10 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
     profit = pd.DataFrame()
     choose_nav = pd.DataFrame()
     hold = np.zeros((4), dtype=np.float)
-    mds_img = {}
-    mean_similarity = 0
+    # mds_img = {}
+    global response_data
+    # mean_similarity = 0
+    response_data['mean_similarity'] = 0
 
     for i in range(12 * (end.year - start.year) + (end.month - start.month) + 1):
         start_unix = time.mktime((start + relativedelta(months=i)).timetuple())
@@ -158,9 +167,11 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
         data_df = data_df.corr()
         data_df = 1 - data_df * 0.5 - 0.5
         data_df = data_df.fillna(-1)
-        mean_similarity += data_df[choose].T[choose].iloc[0].sum() / 3
+        response_data['mean_similarity'] += data_df[choose].T[choose].iloc[0].sum() / 3
+        # mean_similarity += data_df[choose].T[choose].iloc[0].sum() / 3
         if i != 0:
-            mean_similarity /=2
+            # mean_similarity /=2
+            response_data['mean_similarity'] /=2
         
         color = np.asarray(["yellow" for i in range(len(data_df))])
         color[0:4] = "purple"
@@ -180,16 +191,21 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
         p.y_range = Range1d(-0.6, 0.6)
         p.circle(x='x', y='y', color='color', size=6.5, source=source)
         script, div = components(p, CDN)
-        mds_img[(start + relativedelta(months=i)
-                 ).strftime('%Y-%m')] = {'script': script, 'div': div}
+        response_data[(start + relativedelta(months=i)).strftime('%Y-%m')] = {'script': script, 'div': div}
+        # mds_img[(start + relativedelta(months=i)
+        #          ).strftime('%Y-%m')] = {'script': script, 'div': div}
 
     profit = profit.rename(columns={0: "profit"})
     profit["profit"] = (profit["profit"]-1) * 100
     profit.index.name = "date"
     
-    indicator = profit_indicator(profit, start, end, choose_nav)
-    indicator['money'] = (hold * choose_nav.iloc[-1][choose]).sum()
-    indicator['profit'] = profit.iloc[-1][0]
+    # indicator = profit_indicator(profit, start, end, choose_nav)
+    profit_indicator(profit, start, end, choose_nav)
+    response_data['money'] = (hold * choose_nav.iloc[-1][choose]).sum()
+    response_data['profit'] = profit.iloc[-1][0]
+
+    # indicator['money'] = (hold * choose_nav.iloc[-1][choose]).sum()
+    # indicator['profit'] = profit.iloc[-1][0]
 
     profit.index = profit.index + 28800
     profit.index = pd.to_datetime(profit.index, unit='s')
@@ -200,5 +216,7 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
     p.add_tools(HoverTool(tooltips=[("date", "@date{%F}"), ("profit", "@profit%")],
                           formatters={'date': 'datetime', }, mode='vline'))
     script, div = components(p, CDN)
-    profit_img = {'script': script, 'div': div}
-    return profit_img, mds_img, indicator, mean_similarity
+    response_data['profit_img'] = {'script': script, 'div': div}
+    # profit_img = {'script': script, 'div': div}
+    # return profit_img, mds_img, indicator, mean_similarity
+    return response_data
