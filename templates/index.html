@@ -1,48 +1,71 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8" />
   <title>Show Fund DB</title>
   {% load staticfiles %}
-  <link href="{% static "css/style.css" %}" rel = "stylesheet"
-    type="text/css" />
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 </head>
 
 <body>
   <h1><span class="yellow">Fund {{errormessage}}</span></h1>
-<div class="nav">
-</div>
-<div class="output">
-<table class="container">
-  <thead>
-		<tr>
-      <th><h1>Fund ID</h1></th>
-      <th><h1>Chinese Name</h1></th>
-      <th><h1>English Name</h1></th>
-      <th><h1>ISIN Code</h1></th>
-      <th><h1>Entry Day</h1></th>
-      <th><h1>Manager Fee</h1></th>
-      <th><h1>Custody Fee</h1></th>
-      <th><h1>Sales Fee</h1></th>
-      <th><h1>Area</h1></th>
-		</tr>
-	</thead>
-  <tbody>
-{% for item in items %}
-  <tr>
-    <td>{{item.fund_id}}</td>
-    <td>{{item.chinese_name}}</td>
-    <td>{{item.english_name}}</td>
-    <td>{{item.isin_code}}</td>
-    <td>{{item.entry_day}}</td>
-    <td>{{item.manager_fee}}</td>
-    <td>{{item.custody_fee}}</td>
-    <td>{{item.sales_fee}}</td>
-    <td>{{item.area}}</td>
-  </tr>
-{% endfor %}
-  </tbody>
-</table>
-</div>
+  <button id="prev_page">上一頁</button>
+  <button id="next_page">下一頁</button>
+  <div class="nav">
+  </div>
+  <div class="output">
+    <table class="container">
+      <thead>
+        <tr>
+          <th>
+            <h1>Fund ID</h1>
+          </th>
+          <th>
+            <h1>Chinese Name</h1>
+          </th>
+          <th>
+            <h1>English Name</h1>
+          </th>
+          <th>
+            <h1>ISIN Code</h1>
+          </th>
+          <th>
+            <h1>Entry Day</h1>
+          </th>
+          <th>
+            <h1>Manager Fee</h1>
+          </th>
+          <th>
+            <h1>Custody Fee</h1>
+          </th>
+          <th>
+            <h1>Sales Fee</h1>
+          </th>
+          <th>
+            <h1>Area</h1>
+          </th>
+        </tr>
+      </thead>
+      <tbody id="items">
+        {% for item in items %}
+        <tr>
+          <td>{{item.fund_id}}</td>
+          <td>{{item.chinese_name}}</td>
+          <td>{{item.english_name}}</td>
+          <td>{{item.isin_code}}</td>
+          <td>{{item.entry_day}}</td>
+          <td>{{item.manager_fee}}</td>
+          <td>{{item.custody_fee}}</td>
+          <td>{{item.sales_fee}}</td>
+          <td>{{item.area}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <link href="{% static "css/style.css" %}" rel="stylesheet" type="text/css" />
+  <script src="{% static "javascript/index.js" %}"></script>
 </body>
+
 </html>

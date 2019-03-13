@@ -8,7 +8,7 @@
 
 
 <body>
-  <form action="." method="POST" name="form">
+  <form action="." method="POST" name="form" id="form">
     {% csrf_token %}
     <select name="start_year">
       <option value="2000">2000</option>
@@ -129,6 +129,8 @@
     執行頻率:<input type="value" name="frequency"><br>
     <input type="submit" name="button" value="送出">
   </form>
+
+  <link rel="stylesheet" type="text/css" href="{% static "css/test.css" %}" media="screen" />
 </body>
 
 </html>

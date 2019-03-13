@@ -55,6 +55,13 @@ def test_respoonse(request, start_year, start_month, end_year, end_month, invest
 def index(request):
     engine = create_engine('sqlite:///fund.db')
     items = pd.read_sql(
-        sql='select * from basic_information', con=engine)
+        sql='select * from basic_information limit 10', con=engine)
     items = items.to_dict('records', into=defaultdict(list))
     return render(request, "index.html", locals())
+
+def index_response(request, page):
+    engine = create_engine('sqlite:///fund.db')
+    items = pd.read_sql(
+        sql='select * from basic_information limit ?,10', con=engine, params=[(page-1)*10])
+    items = items.to_dict('index')
+    return JsonResponse(items)

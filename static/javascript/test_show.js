@@ -2,6 +2,7 @@ $(function () {
   
   var response_data;
   $.getJSON(location.pathname + 'response/', function (ret) {
+    $(".loading").remove();
     response_data = ret;
     $("#sharpe_ratio").text("夏普指標: " + response_data.sharpe_ratio);
     $("#std").text("標準差: " + response_data.std);
@@ -11,7 +12,6 @@ $(function () {
     $("#profit").text("最後收益: " + response_data.profit);
     $("#mean_similarity").text("平均距離: " + response_data.mean_similarity);
     $("#profit").html(response_data['profit_img'].div + response_data['profit_img'].script);
-    $(".loading").remove();
   })
 
   var temp = ''
