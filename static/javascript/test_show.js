@@ -11,7 +11,7 @@ $(function () {
     $("#profit").text("最後收益: " + response_data.profit);
     $("#mean_similarity").text("平均距離: " + response_data.mean_similarity);
     $("#profit").html(response_data['profit_img'].div + response_data['profit_img'].script);
-    $("#wait").remove();
+    $(".loading").remove();
   })
 
   var temp = ''
