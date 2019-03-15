@@ -54,20 +54,20 @@ def selection(start, btest_time, investement_type, i, sharpe_ratio, std, beta, t
     indicator_βp = indicator_ρpm * indicator_σp / indicator_σm
     bl = data_df.iloc[0] > 0
 
-    if sharpe_ratio != "":
+    if sharpe_ratio != " ":
         sharpe_ratio = float(sharpe_ratio)
-        bl = bl & ((indicator_Rp.iloc[-1] - 0.01) /
+        bl = bl & ((indicator_Rp.iloc[-1] - (0.01 / data_df.shape[0])) /
                    indicator_σp > sharpe_ratio)
 
-    if std != "":
+    if std != " ":
         std = float(std)
-        bl = bl & (data_df.std(ddof=1) < std)
+        bl = bl & (indicator_σp < std)
 
-    if beta != "":
+    if beta != " ":
         beta = float(beta)
         bl = bl & (indicator_βp < beta)
 
-    if treynor_ratio != "":
+    if treynor_ratio != " ":
         treynor_ratio = float(treynor_ratio)
         bl = bl & ((indicator_Rp.iloc[-1] - 0.01) /
                    indicator_βp > treynor_ratio)
@@ -104,8 +104,8 @@ def profit_indicator(profit, start, end, choose_nav):
 
     global response_data
     response_data['sharpe_ratio'] = (
-        (profit.iloc[-1] - 0.01) / indicator_σp)[0]
-    response_data['std'] = choose_nav.std().mean()
+        (profit.iloc[-1] - (0.01 / profit.shape[0])) / indicator_σp)[0]
+    response_data['std'] = indicator_σp
     response_data['beta'] = indicator_βp
     response_data['treynor_ratio'] = (
         (profit.iloc[-1] - 0.01) / indicator_βp)[0]
@@ -121,6 +121,11 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
     global response_data
     response_data['mean_similarity'] = 0
 
+    if strategy == 2:
+        money /= (12 * (end.year - start.year) +
+                  (end.month - start.month) + 1) / frequency
+        total_money = money
+
     for i in range(12 * (end.year - start.year) + (end.month - start.month) + 1):
         start_unix = time.mktime((start + relativedelta(months=i)).timetuple())
         end_unix = time.mktime(
@@ -131,20 +136,24 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
         data_df = data_df.fillna(method="ffill")
         data_df = data_df.fillna(method="bfill")
 
-        if strategy == 2:
-            hold += (buy_ratio * money / data_df[choose].iloc[0].T).values
-            profit = pd.concat(
-                [profit, (data_df[choose] * hold).T.sum() / (money*(i+1))], axis=0)
-        else:
-            if i == 0:
-                hold = (buy_ratio * money / data_df[choose].iloc[0].T).values
-            elif strategy != 1 and i % frequency == frequency - 1:
+        if i == 0:
+            hold = (buy_ratio * money / data_df[choose].iloc[0].T).values
+        elif strategy != 0 and i % frequency == frequency - 1:
+            if strategy == 2:
+                hold += (buy_ratio * money / data_df[choose].iloc[0].T).values
+                total_money += money
+            else:
                 temp = (hold * data_df[choose].iloc[0]).sum()
                 if strategy == 3:
                     choose = selection(start, btest_time, investement_type, i, sharpe_ratio,
                                        std, beta, treynor_ratio, choose)
                 hold = (buy_ratio * temp /
                         data_df[choose].iloc[0].T).values
+
+        if strategy == 2:
+            profit = pd.concat(
+                [profit, (data_df[choose] * hold).T.sum() / total_money], axis=0)
+        else:
             profit = pd.concat(
                 [profit, (data_df[choose] * hold).T.sum() / money], axis=0)
 
@@ -162,7 +171,7 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
         data_df = data_df.corr()
         data_df = 1 - data_df * 0.5 - 0.5
         data_df = data_df.fillna(-1)
-        response_data['mean_similarity'] += data_df[choose].T[choose].iloc[0].sum() / 3
+        response_data['mean_similarity'] += data_df[choose].T[choose].sum().sum()/12
         if i != 0:
             response_data['mean_similarity'] /= 2
 
@@ -182,16 +191,17 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
                    title="MDS", toolbar_location=None, tools="")
         p.x_range = Range1d(-0.6, 0.6)
         p.y_range = Range1d(-0.6, 0.6)
-        p.circle(x='x', y='y', color='color', size=6.5, source=source)
+        p.circle(x='x', y='y', color='color', size=8, source=source)
         script, div = components(p, CDN)
         response_data[(start + relativedelta(months=i)
                        ).strftime('%Y-%m')] = {'script': script, 'div': div}
 
     profit = profit.rename(columns={0: "profit"})
-    profit["profit"] = (profit["profit"]-1) * 100
+    profit["profit"] = (profit["profit"]-1)
+    profit_indicator(profit, start, end, choose_nav)
+    profit["profit"] = profit["profit"] * 100
     profit.index.name = "date"
 
-    profit_indicator(profit, start, end, choose_nav)
     response_data['money'] = (hold * choose_nav.iloc[-1][choose]).sum()
     response_data['profit'] = profit.iloc[-1][0]
 

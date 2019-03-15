@@ -10,7 +10,7 @@
 <body>
   <form action="." method="POST" name="form" id="form">
     {% csrf_token %}
-    <select name="start_year">
+    開始日期：<select name="start_year">
       <option value="2000">2000</option>
       <option value="2001">2001</option>
       <option value="2002">2002</option>
@@ -43,8 +43,8 @@
       <option value="10">10</option>
       <option value="11">11</option>
       <option value="12">12</option>
-    </select>
-    <select name="end_year">
+    </select><br>
+    結束日期：<select name="end_year">
       <option value="2000">2000</option>
       <option value="2001">2001</option>
       <option value="2002">2002</option>
@@ -77,8 +77,8 @@
       <option value="10">10</option>
       <option value="11">11</option>
       <option value="12">12</option>
-    </select>
-    <select name="investement_type">
+    </select><br>
+    投資類型：<select name="investement_type">
       <option value="不分類">不分類</option>
       <optgroup label="境內">
         <option value="境內 ETF">ETF</option>
@@ -116,7 +116,7 @@
     Beta值: <input type="value" name="beta"><br>
     Treynor指數: <input type="value" name="treynor_ratio"><br>
     回挑選時長（月）: <input type="value" name="btest_time"><br>
-    投入資金: <input type="value" name="money" value="100000"><br>
+    總投入資金: <input type="value" name="money" value="100000"><br>
     購買權重: <input type="value" name="buy_ratio0" value="0.25">
     <input type="value" name="buy_ratio1" value="0.25">
     <input type="value" name="buy_ratio2" value="0.25">
@@ -126,7 +126,7 @@
     <input type="radio" name="strategy" value="2"> 2. 定期定額 <br>
     <input type="radio" name="strategy" value="3"> 3. 動態資產配置策略
     <br>
-    執行頻率:<input type="value" name="frequency"><br>
+    策略執行頻率（月）:<input type="value" name="frequency"><br>
     <input type="submit" name="button" value="送出">
   </form>
 

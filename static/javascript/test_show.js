@@ -9,14 +9,14 @@ $(function () {
     $("#beta").text("beta: " + response_data.beta);
     $("#treynor_ratio").text("Treynor指數: " + response_data.treynor_ratio);
     $("#money").text("期末金額: " + response_data.money);
-    $("#profit").text("最後收益: " + response_data.profit);
+    $("#profit").text("期末報酬率(%): " + response_data.profit + "%");
     $("#mean_similarity").text("平均距離: " + response_data.mean_similarity);
-    $("#profit").html(response_data['profit_img'].div + response_data['profit_img'].script);
+    $("#profit_img").html(response_data['profit_img'].div + response_data['profit_img'].script);
   })
 
   var temp = ''
-  $("#profit").mousemove(function () {
-    mds_img_idx = $("#profit, .bk-canvas-overlays")
+  $("#profit_img").mousemove(function () {
+    mds_img_idx = $("#profit_img, .bk-canvas-overlays")
     mds_img_idx = mds_img_idx.children().find('span').html()
     mds_img_idx = mds_img_idx.substr(0, 7)
     if (temp != mds_img_idx) {

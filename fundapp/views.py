@@ -16,10 +16,10 @@ def test(request):
             " end_year=" + request.POST['end_year'] + \
             " end_month=" + request.POST['end_month'] + \
             " investement_type=" + request.POST['investement_type'] + \
-            " sharpe_ratio=" + request.POST['sharpe_ratio'] + \
-            " std=" + request.POST['std'] + \
-            " beta=" + request.POST['beta'] + \
-            " treynor_ratio=" + request.POST['treynor_ratio'] + \
+            " sharpe_ratio= " + request.POST['sharpe_ratio'] + \
+            " std= " + request.POST['std'] + \
+            " beta= " + request.POST['beta'] + \
+            " treynor_ratio= " + request.POST['treynor_ratio'] + \
             " btest_time=" + request.POST['btest_time'] + \
             " money=" + request.POST['money'] + \
             " buy_ratio0=" + request.POST['buy_ratio0'] + \
