@@ -74,6 +74,9 @@ def index_response(request, page):
 
 def search(request, column, keyword):
     items = pd.read_sql(sql='select * from basic_information', con=engine)
-    items = items[items[column].str.contains(keyword)]
+    if "fee" in column:
+        items = items[items[column] <= float(keyword)]
+    else:
+        items = items[items[column].str.contains(keyword)]
     items = items.to_dict('index')
     return JsonResponse(items)
