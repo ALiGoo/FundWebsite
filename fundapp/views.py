@@ -8,6 +8,8 @@ from datetime import datetime
 from sqlalchemy import create_engine
 from collections import defaultdict
 
+engine = create_engine('sqlite:///fund.db')
+
 
 def test(request):
     if request.method == "POST":
@@ -38,15 +40,18 @@ def test_show(request, start_year, start_month, end_year, end_month, investement
 
 def test_respoonse(request, start_year, start_month, end_year, end_month, investement_type, sharpe_ratio, std, beta, treynor_ratio, btest_time, money, buy_ratio0, buy_ratio1, buy_ratio2, buy_ratio3, strategy, frequency):
     response_data = img(start=datetime.strptime("-".join([start_year, start_month]), '%Y-%m'),
-                        end=datetime.strptime("-".join([end_year, end_month]), '%Y-%m'),
-                        investement_type=np.asarray(investement_type.split(" ")),
+                        end=datetime.strptime(
+                            "-".join([end_year, end_month]), '%Y-%m'),
+                        investement_type=np.asarray(
+                            investement_type.split(" ")),
                         sharpe_ratio=sharpe_ratio,
                         std=std,
                         beta=beta,
                         treynor_ratio=treynor_ratio,
                         btest_time=btest_time,
                         money=money,
-                        buy_ratio=np.asarray([float(buy_ratio0), float(buy_ratio1), float(buy_ratio2), float(buy_ratio3)], dtype=np.float),
+                        buy_ratio=np.asarray([float(buy_ratio0), float(buy_ratio1), float(
+                            buy_ratio2), float(buy_ratio3)], dtype=np.float),
                         strategy=strategy,
                         frequency=frequency)
     return JsonResponse(response_data)
@@ -59,9 +64,16 @@ def index(request):
     items = items.to_dict('records', into=defaultdict(list))
     return render(request, "index.html", locals())
 
+
 def index_response(request, page):
-    engine = create_engine('sqlite:///fund.db')
     items = pd.read_sql(
         sql='select * from basic_information limit ?,10', con=engine, params=[(page-1)*10])
+    items = items.to_dict('index')
+    return JsonResponse(items)
+
+
+def search(request, column, keyword):
+    items = pd.read_sql(sql='select * from basic_information', con=engine)
+    items = items[items[column].str.contains(keyword)]
     items = items.to_dict('index')
     return JsonResponse(items)

@@ -171,7 +171,7 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
         data_df = data_df.corr()
         data_df = 1 - data_df * 0.5 - 0.5
         data_df = data_df.fillna(-1)
-        response_data['mean_similarity'] += data_df[choose].T[choose].sum().sum()/12
+        response_data['mean_similarity'] += np.square(data_df[choose].T[choose].sum().sum()/2)
         if i != 0:
             response_data['mean_similarity'] /= 2
 
