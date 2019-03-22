@@ -1,7 +1,7 @@
 $(function () {
-  
+
   var response_data;
-  $.getJSON(location.pathname + 'response/', function (ret) {
+  $.getJSON($("#url").text(), function (ret) {
     $(".loading").remove();
     response_data = ret;
     $("#sharpe_ratio").text("夏普指標: " + response_data.sharpe_ratio);

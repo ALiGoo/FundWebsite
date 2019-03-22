@@ -187,7 +187,7 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
         TOOLTIPS = [
             ("fund_id", "@name"),
         ]
-        p = figure(plot_width=1000, plot_height=1000, tooltips=TOOLTIPS,
+        p = figure(plot_width=500, plot_height=500, tooltips=TOOLTIPS,
                    title="MDS", toolbar_location=None, tools="")
         p.x_range = Range1d(-0.6, 0.6)
         p.y_range = Range1d(-0.6, 0.6)

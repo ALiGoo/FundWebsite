@@ -13,29 +13,25 @@ engine = create_engine('sqlite:///fund.db')
 
 def test(request):
     if request.method == "POST":
-        url = "/test/start_year=" + request.POST['start_year'] + \
-            " start_month=" + request.POST['start_month'] + \
-            " end_year=" + request.POST['end_year'] + \
-            " end_month=" + request.POST['end_month'] + \
-            " investement_type=" + request.POST['investement_type'] + \
-            " sharpe_ratio= " + request.POST['sharpe_ratio'] + \
-            " std= " + request.POST['std'] + \
-            " beta= " + request.POST['beta'] + \
-            " treynor_ratio= " + request.POST['treynor_ratio'] + \
-            " btest_time=" + request.POST['btest_time'] + \
-            " money=" + request.POST['money'] + \
-            " buy_ratio0=" + request.POST['buy_ratio0'] + \
-            " buy_ratio1=" + request.POST['buy_ratio1'] + \
-            " buy_ratio2=" + request.POST['buy_ratio2'] + \
-            " buy_ratio3=" + request.POST['buy_ratio3'] + \
-            " strategy=" + request.POST['strategy'] + \
-            " frequency=" + request.POST['frequency'] + "/"
-        return redirect(url)
+        url = "/test/" + request.POST['start_year'] + \
+            "&" + request.POST['start_month'] + \
+            "&" + request.POST['end_year'] + \
+            "&" + request.POST['end_month'] + \
+            "&" + request.POST['investement_type'] + \
+            "& " + request.POST['sharpe_ratio'] + \
+            "& " + request.POST['std'] + \
+            "& " + request.POST['beta'] + \
+            "& " + request.POST['treynor_ratio'] + \
+            "&" + request.POST['btest_time'] + \
+            "&" + request.POST['money'] + \
+            "&" + request.POST['buy_ratio0'] + \
+            "&" + request.POST['buy_ratio1'] + \
+            "&" + request.POST['buy_ratio2'] + \
+            "&" + request.POST['buy_ratio3'] + \
+            "&" + request.POST['strategy'] + \
+            "&" + request.POST['frequency'] + "/"
+        return render(request, "test_show.html", locals())
     return render(request, "test.html", locals())
-
-
-def test_show(request, start_year, start_month, end_year, end_month, investement_type, sharpe_ratio, std, beta, treynor_ratio, btest_time, money, buy_ratio0, buy_ratio1, buy_ratio2, buy_ratio3, strategy, frequency):
-    return render(request, "test_show.html", locals())
 
 
 def test_respoonse(request, start_year, start_month, end_year, end_month, investement_type, sharpe_ratio, std, beta, treynor_ratio, btest_time, money, buy_ratio0, buy_ratio1, buy_ratio2, buy_ratio3, strategy, frequency):
