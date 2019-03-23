@@ -13,10 +13,8 @@ engine = create_engine('sqlite:///fund.db')
 
 def test(request):
     if request.method == "POST":
-        url = "/test/" + request.POST['start_year'] + \
-            "&" + request.POST['start_month'] + \
-            "&" + request.POST['end_year'] + \
-            "&" + request.POST['end_month'] + \
+        url = "/test/" + "-".join([request.POST['start_year'], request.POST['start_month']]) + \
+            "&" + "-".join([request.POST['end_year'], request.POST['end_month']]) + \
             "&" + request.POST['investement_type'] + \
             "& " + request.POST['sharpe_ratio'] + \
             "& " + request.POST['std'] + \
@@ -25,29 +23,27 @@ def test(request):
             "&" + request.POST['btest_time'] + \
             "&" + request.POST['money'] + \
             "&" + request.POST['buy_ratio0'] + \
-            "&" + request.POST['buy_ratio1'] + \
-            "&" + request.POST['buy_ratio2'] + \
-            "&" + request.POST['buy_ratio3'] + \
+            "," + request.POST['buy_ratio1'] + \
+            "," + request.POST['buy_ratio2'] + \
+            "," + request.POST['buy_ratio3'] + \
             "&" + request.POST['strategy'] + \
             "&" + request.POST['frequency'] + "/"
         return render(request, "test_show.html", locals())
     return render(request, "test.html", locals())
 
 
-def test_respoonse(request, start_year, start_month, end_year, end_month, investement_type, sharpe_ratio, std, beta, treynor_ratio, btest_time, money, buy_ratio0, buy_ratio1, buy_ratio2, buy_ratio3, strategy, frequency):
-    response_data = img(start=datetime.strptime("-".join([start_year, start_month]), '%Y-%m'),
-                        end=datetime.strptime(
-                            "-".join([end_year, end_month]), '%Y-%m'),
+def test_respoonse(request, start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, btest_time, money, buy_ratio, strategy, frequency):
+    response_data = img(start=datetime.strptime(start, '%Y-%m'),
+                        end=datetime.strptime(end, '%Y-%m'),
                         investement_type=np.asarray(
-                            investement_type.split(" ")),
+                        investement_type.split(" ")),
                         sharpe_ratio=sharpe_ratio,
                         std=std,
                         beta=beta,
                         treynor_ratio=treynor_ratio,
                         btest_time=btest_time,
                         money=money,
-                        buy_ratio=np.asarray([float(buy_ratio0), float(buy_ratio1), float(
-                            buy_ratio2), float(buy_ratio3)], dtype=np.float),
+                        buy_ratio = np.asarray(buy_ratio.split(","), dtype=np.float),
                         strategy=strategy,
                         frequency=frequency)
     return JsonResponse(response_data)

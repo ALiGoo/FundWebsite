@@ -54,20 +54,17 @@ def selection(start, btest_time, investement_type, i, sharpe_ratio, std, beta, t
     indicator_βp = indicator_ρpm * indicator_σp / indicator_σm
     bl = data_df.iloc[0] > 0
 
-    if sharpe_ratio != " ":
+    if bool(sharpe_ratio):
         sharpe_ratio = float(sharpe_ratio)
         bl = bl & ((indicator_Rp.iloc[-1] - (0.01 / data_df.shape[0])) /
                    indicator_σp > sharpe_ratio)
-
-    if std != " ":
+    if bool(std):
         std = float(std)
         bl = bl & (indicator_σp < std)
-
-    if beta != " ":
+    if bool(beta):
         beta = float(beta)
         bl = bl & (indicator_βp < beta)
-
-    if treynor_ratio != " ":
+    if bool(treynor_ratio):
         treynor_ratio = float(treynor_ratio)
         bl = bl & ((indicator_Rp.iloc[-1] - 0.01) /
                    indicator_βp > treynor_ratio)
@@ -89,17 +86,17 @@ def selection(start, btest_time, investement_type, i, sharpe_ratio, std, beta, t
     return choose
 
 
-def profit_indicator(profit, start, end, choose_nav):
-    d0050 = pd.read_sql(sql='select nav,date from price where fund_id = "0050 元大台灣50" and date between ? and ? order by date asc',
-                        con=engine,
-                        params=[time.mktime(start.timetuple()),
-                                time.mktime(end.timetuple())],
-                        index_col="date")
-    d0050 = ((d0050 - d0050.iloc[0]) / d0050.iloc[0])
+def profit_indicator(profit, start, end):
+    df_0050 = pd.read_sql(sql='select nav,date from price where fund_id = "0050 元大台灣50" and date between ? and ? order by date asc',
+                          con=engine,
+                          params=[time.mktime(start.timetuple()),
+                                  time.mktime(end.timetuple())],
+                          index_col="date")
+    df_0050 = ((df_0050 - df_0050.iloc[0]) / df_0050.iloc[0])
 
     indicator_σp = profit.std(ddof=1, axis=0)[0]
-    indicator_ρpm = pd.concat([profit, d0050], axis=1).corr().iloc[0][1]
-    indicator_σm = d0050.std(ddof=1)[0]
+    indicator_ρpm = pd.concat([profit, df_0050], axis=1).corr().iloc[0][1]
+    indicator_σm = df_0050.std(ddof=1)[0]
     indicator_βp = indicator_ρpm * indicator_σp / indicator_σm
 
     global response_data
@@ -112,21 +109,21 @@ def profit_indicator(profit, start, end, choose_nav):
 
 
 def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, btest_time, money, buy_ratio, strategy, frequency):
-    choose = np.asarray([" ", " ", " ", " "], dtype='<U32')
-    choose = selection(start, btest_time, investement_type, 0, sharpe_ratio, std,
-                       beta, treynor_ratio, choose)
     profit = pd.DataFrame()
-    choose_nav = pd.DataFrame()
     hold = np.zeros((4), dtype=np.float)
     global response_data
     response_data['mean_similarity'] = 0
+    length = 12 * (end.year - start.year) + (end.month - start.month) + 1
+    choose = np.asarray([" ", " ", " ", " "], dtype='<U32')
+    choose = selection(start, btest_time, investement_type, 0, sharpe_ratio, std,
+                       beta, treynor_ratio, choose)
 
     if strategy == 2:
         money /= (12 * (end.year - start.year) +
                   (end.month - start.month) + 1) / frequency
         total_money = money
 
-    for i in range(12 * (end.year - start.year) + (end.month - start.month) + 1):
+    for i in range(length):
         start_unix = time.mktime((start + relativedelta(months=i)).timetuple())
         end_unix = time.mktime(
             (start + relativedelta(months=i+1, days=-1)).timetuple())
@@ -157,13 +154,14 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
             profit = pd.concat(
                 [profit, (data_df[choose] * hold).T.sum() / money], axis=0)
 
-        choose_nav = pd.concat([choose_nav, data_df[choose]], sort=False)
-
         for j, ch in enumerate(choose):
             interest = pd.read_sql(sql='select sum(interest) from interest where date between ? and ? and fund_id == ? order by date asc',
                                    con=engine, params=[start_unix, end_unix, ch])
             hold[j] += (interest * hold[j] /
                         data_df[ch].iloc[-1]).fillna(0).loc[0][0]
+
+        if i == length-1:
+            response_data['money'] = (hold * data_df.iloc[-1][choose]).sum()
 
         data_df = pd.concat([data_df[choose], data_df.T.sample(
             n=296).T], axis=1).T.drop_duplicates().T
@@ -171,7 +169,9 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
         data_df = data_df.corr()
         data_df = 1 - data_df * 0.5 - 0.5
         data_df = data_df.fillna(-1)
-        response_data['mean_similarity'] += np.square(data_df[choose].T[choose].sum().sum()/2)
+
+        response_data['mean_similarity'] += np.square(
+            data_df[choose].T[choose].sum().sum()/2)
         if i != 0:
             response_data['mean_similarity'] /= 2
 
@@ -198,16 +198,14 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
 
     profit = profit.rename(columns={0: "profit"})
     profit["profit"] = (profit["profit"]-1)
-    profit_indicator(profit, start, end, choose_nav)
+    profit_indicator(profit, start, end)
     profit["profit"] = profit["profit"] * 100
     profit.index.name = "date"
 
-    response_data['money'] = (hold * choose_nav.iloc[-1][choose]).sum()
     response_data['profit'] = profit.iloc[-1][0]
 
     profit.index = profit.index + 28800
     profit.index = pd.to_datetime(profit.index, unit='s')
-
     p = figure(x_axis_type="datetime", plot_width=1500,
                plot_height=300, title="Profit", toolbar_location=None, tools="")
     p.line(x='date', y='profit', line_width=3, source=profit)
