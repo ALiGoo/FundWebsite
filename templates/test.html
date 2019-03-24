@@ -4,6 +4,9 @@
 <head>
   <title>Home</title>
   {% load staticfiles %}
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/additional-methods.min.js"></script>
 </head>
 
 
@@ -117,20 +120,21 @@
     Treynor指數: <input type="value" name="treynor_ratio"><br>
     回挑選時長（月）: <input type="value" name="btest_time"><br>
     總投入資金: <input type="value" name="money" value="100000"><br>
-    購買權重: <input type="value" name="buy_ratio0" value="0.25">
-    <input type="value" name="buy_ratio1" value="0.25">
-    <input type="value" name="buy_ratio2" value="0.25">
-    <input type="value" name="buy_ratio3" value="0.25"><br>
+    購買權重: <input type="value" name="buy_ratio0" value="0.25" class="required">
+    <input type="value" name="buy_ratio1" value="0.25" class="required">
+    <input type="value" name="buy_ratio2" value="0.25" class="required">
+    <input type="value" name="buy_ratio3" value="0.25" class="required"><br>
     <input type="radio" name="strategy" value="0"> 0. 買入持有策略 <br>
     <input type="radio" name="strategy" value="1"> 1. 固定比例投資策略 <br>
     <input type="radio" name="strategy" value="2"> 2. 定期定額 <br>
     <input type="radio" name="strategy" value="3"> 3. 動態資產配置策略
     <br>
     策略執行頻率（月）:<input type="value" name="frequency"><br>
-    <input type="submit" name="button" value="送出">
+    <input type="submit" name="button" value="送出" class="submit">
   </form>
 
   <link rel="stylesheet" type="text/css" href="{% static "css/test.css" %}" media="screen" />
+  <script src="{% static "javascript/test.js" %}"></script>
 </body>
 
 </html>

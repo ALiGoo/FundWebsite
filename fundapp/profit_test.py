@@ -25,19 +25,12 @@ def selection(start, btest_time, investement_type, i, sharpe_ratio, std, beta, t
     if investement_type[0] == "不分類":
         data_df = pd.read_sql(sql='select * from price where date between ? and ? order by date asc',
                               con=engine, params=[start_unix, end_unix])
-    elif investement_type[0] == "境內":
-        data_df = pd.read_sql(sql='SELECT * FROM price WHERE EXISTS\
-                (SELECT fund_id FROM domestic_information\
-                WHERE investment_target == ? and price.date between ? and ?\
-                and fund_id == price.fund_id)',
-                              con=engine, params=[investement_type[1], start_unix, end_unix])
     else:
         data_df = pd.read_sql(sql='SELECT * FROM price WHERE EXISTS\
-                    (SELECT fund_id FROM overseas_information\
-                    WHERE subject_matter == ? and price.date between ? and ?\
-                    and fund_id == price.fund_id)',
-                              con=engine, params=[investement_type[1], start_unix, end_unix])
-
+                (SELECT fund_id FROM basic_information\
+                WHERE area = ? and investment_target = ? and price.date between ? and ?\
+                and fund_id == price.fund_id)',
+                              con=engine, params=[investement_type[0], investement_type[1], start_unix, end_unix])
     if "0050 元大台灣50" not in data_df.fund_id.values:
         data_df = pd.concat([data_df, pd.read_sql(
             sql='select * from price where fund_id = "0050 元大台灣50" and date between ? and ? order by date asc',
@@ -172,8 +165,6 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
 
         response_data['mean_similarity'] += np.square(
             data_df[choose].T[choose].sum().sum()/2)
-        if i != 0:
-            response_data['mean_similarity'] /= 2
 
         color = np.asarray(["yellow" for i in range(len(data_df))])
         color[0:4] = "purple"
@@ -203,6 +194,7 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
     profit.index.name = "date"
 
     response_data['profit'] = profit.iloc[-1][0]
+    response_data['mean_similarity'] /= length
 
     profit.index = profit.index + 28800
     profit.index = pd.to_datetime(profit.index, unit='s')

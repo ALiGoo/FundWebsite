@@ -17,9 +17,9 @@ def test(request):
             "&" + "-".join([request.POST['end_year'], request.POST['end_month']]) + \
             "&" + request.POST['investement_type'] + \
             "& " + request.POST['sharpe_ratio'] + \
-            "& " + request.POST['std'] + \
-            "& " + request.POST['beta'] + \
-            "& " + request.POST['treynor_ratio'] + \
+            "," + request.POST['std'] + \
+            "," + request.POST['beta'] + \
+            "," + request.POST['treynor_ratio'] + \
             "&" + request.POST['btest_time'] + \
             "&" + request.POST['money'] + \
             "&" + request.POST['buy_ratio0'] + \
@@ -32,18 +32,20 @@ def test(request):
     return render(request, "test.html", locals())
 
 
-def test_respoonse(request, start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, btest_time, money, buy_ratio, strategy, frequency):
+def test_respoonse(request, start, end, investement_type, ratio, btest_time, money, buy_ratio, strategy, frequency):
+    ratio = ratio.split(",")
     response_data = img(start=datetime.strptime(start, '%Y-%m'),
                         end=datetime.strptime(end, '%Y-%m'),
                         investement_type=np.asarray(
-                        investement_type.split(" ")),
-                        sharpe_ratio=sharpe_ratio,
-                        std=std,
-                        beta=beta,
-                        treynor_ratio=treynor_ratio,
+                            investement_type.split(" ")),
+                        sharpe_ratio=ratio[0],
+                        std=ratio[1],
+                        beta=ratio[2],
+                        treynor_ratio=ratio[3],
                         btest_time=btest_time,
                         money=money,
-                        buy_ratio = np.asarray(buy_ratio.split(","), dtype=np.float),
+                        buy_ratio=np.asarray(
+                            buy_ratio.split(","), dtype=np.float),
                         strategy=strategy,
                         frequency=frequency)
     return JsonResponse(response_data)

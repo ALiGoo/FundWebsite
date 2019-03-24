@@ -9,5 +9,5 @@ urlpatterns = [
     path('index/p=<int:page>', index_response),
     path('index/c=<str:column>&key=<str:keyword>', search),
     path('test/', test),
-    path('test/<slug:start>&<slug:end>&<str:investement_type>&<str:sharpe_ratio>&<str:std>&<str:beta>&<str:treynor_ratio>&<int:btest_time>&<int:money>&<str:buy_ratio>&<int:strategy>&<int:frequency>/', test_respoonse),
+    path('test/<slug:start>&<slug:end>&<str:investement_type>&<str:ratio>&<int:btest_time>&<int:money>&<str:buy_ratio>&<int:strategy>&<int:frequency>/', test_respoonse),
 ]
