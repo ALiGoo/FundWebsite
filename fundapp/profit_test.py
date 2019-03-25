@@ -13,7 +13,6 @@ from bokeh.plotting import ColumnDataSource, figure
 from bokeh.resources import CDN
 
 engine = create_engine('sqlite:///fund.db')
-response_data = {}
 
 
 def selection(start, btest_time, investement_type, i, sharpe_ratio, std, beta, treynor_ratio, choose):
@@ -79,7 +78,7 @@ def selection(start, btest_time, investement_type, i, sharpe_ratio, std, beta, t
     return choose
 
 
-def profit_indicator(profit, start, end):
+def profit_indicator(profit, start, end, response_data):
     df_0050 = pd.read_sql(sql='select nav,date from price where fund_id = "0050 元大台灣50" and date between ? and ? order by date asc',
                           con=engine,
                           params=[time.mktime(start.timetuple()),
@@ -92,7 +91,6 @@ def profit_indicator(profit, start, end):
     indicator_σm = df_0050.std(ddof=1)[0]
     indicator_βp = indicator_ρpm * indicator_σp / indicator_σm
 
-    global response_data
     response_data['sharpe_ratio'] = (
         (profit.iloc[-1] - (0.01 / profit.shape[0])) / indicator_σp)[0]
     response_data['std'] = indicator_σp
@@ -104,7 +102,8 @@ def profit_indicator(profit, start, end):
 def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, btest_time, money, buy_ratio, strategy, frequency):
     profit = pd.DataFrame()
     hold = np.zeros((4), dtype=np.float)
-    global response_data
+    response_data = {}
+    response_data['start'] = start.strftime('%Y-%m')
     response_data['mean_similarity'] = 0
     length = 12 * (end.year - start.year) + (end.month - start.month) + 1
     choose = np.asarray([" ", " ", " ", " "], dtype='<U32')
@@ -189,7 +188,7 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
 
     profit = profit.rename(columns={0: "profit"})
     profit["profit"] = (profit["profit"]-1)
-    profit_indicator(profit, start, end)
+    profit_indicator(profit, start, end, response_data)
     profit["profit"] = profit["profit"] * 100
     profit.index.name = "date"
 
