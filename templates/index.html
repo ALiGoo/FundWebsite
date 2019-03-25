@@ -11,7 +11,27 @@
 <body>
   <h1><span class="yellow">Fund {{errormessage}}</span></h1>
   <button id="prev_page">上一頁</button>
+  <body>請輸入頁碼：
+    <input id="page_num" type="number" min="1" max="1000">
+  </body>
+  <button id="go">Go</button>
   <button id="next_page">下一頁</button>
+  <select id="column">
+    <option value="fund_id">Fund id</option>
+    <option value="chinese_name">Chinese_name</option>
+    <option value="english_name">English_name</option>
+    <option value="isin_code">ISIN_code</option>
+    <option value="entry_day">Entry_day</option>
+    <option value="manager_fee">Manager_fee</option>
+    <option value="custody_fee">Custody_fee</option>
+    <option value="sales_fee">Sales_fee</option>
+    <option value="area">Area</option>
+  </select><br>
+  <body>請輸入關鍵字：
+    <input id="keyword" type="text">
+  </body>
+  <button id="search">搜尋</button>
+
   <div class="nav">
   </div>
   <div class="output">
