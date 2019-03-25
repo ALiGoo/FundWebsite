@@ -55,7 +55,7 @@ def index(request):
     engine = create_engine('sqlite:///fund.db')
     items = pd.read_sql(
         sql='select * from basic_information limit 10', con=engine)
-    items['url'] = "index/id=" + items['fund_id'] + "&area=" + items['area']
+    items['url'] = "id=" + items['fund_id'] + "&area=" + items['area']
     items = items.to_dict('records', into=defaultdict(list))
     return render(request, "index.html", locals())
 
@@ -74,7 +74,7 @@ def search(request, column, keyword):
         items = items[items[column] <= float(keyword)]
     else:
         items = items[temp.str.contains(keyword.lower())]
-    items['url'] = "index/id=" + items['fund_id'] + "&area=" + items['area']
+    items['url'] = "id=" + items['fund_id'] + "&area=" + items['area']
     items = items.to_dict('index')
     return JsonResponse(items)
 
