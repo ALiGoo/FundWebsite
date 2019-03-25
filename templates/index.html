@@ -18,14 +18,16 @@
   <button id="next_page">下一頁</button>
   <select id="column">
     <option value="fund_id">Fund id</option>
-    <option value="chinese_name">Chinese_name</option>
-    <option value="english_name">English_name</option>
-    <option value="isin_code">ISIN_code</option>
-    <option value="entry_day">Entry_day</option>
     <option value="manager_fee">Manager_fee</option>
     <option value="custody_fee">Custody_fee</option>
     <option value="sales_fee">Sales_fee</option>
+    <option value="investment_target">Investment Target</option>
     <option value="area">Area</option>
+    <!-- <option value="chinese_name">Chinese_name</option>
+    <option value="english_name">English_name</option>
+    <option value="isin_code">ISIN_code</option>
+    <option value="entry_day">Entry_day</option> -->
+
   </select><br>
   <body>請輸入關鍵字：
     <input id="keyword" type="text">
@@ -42,18 +44,6 @@
             <h1>Fund ID</h1>
           </th>
           <th>
-            <h1>Chinese Name</h1>
-          </th>
-          <th>
-            <h1>English Name</h1>
-          </th>
-          <th>
-            <h1>ISIN Code</h1>
-          </th>
-          <th>
-            <h1>Entry Day</h1>
-          </th>
-          <th>
             <h1>Manager Fee</h1>
           </th>
           <th>
@@ -63,6 +53,9 @@
             <h1>Sales Fee</h1>
           </th>
           <th>
+            <h1>Investment Target</h1>
+          </th>
+          <th>
             <h1>Area</h1>
           </th>
         </tr>
@@ -70,15 +63,17 @@
       <tbody id="items">
         {% for item in items %}
         <tr>
-          <td>{{item.fund_id}}</td>
-          <td>{{item.chinese_name}}</td>
-          <td>{{item.english_name}}</td>
-          <td>{{item.isin_code}}</td>
-          <td>{{item.entry_day}}</td>
+          <td><a href="{{item.url}}">{{item.fund_id}}</td>
           <td>{{item.manager_fee}}</td>
           <td>{{item.custody_fee}}</td>
           <td>{{item.sales_fee}}</td>
+          <td>{{item.investment_target}}</td>
           <td>{{item.area}}</td>
+
+          <!-- <td>{{item.chinese_name}}</td>
+          <td>{{item.english_name}}</td>
+          <td>{{item.isin_code}}</td>
+          <td>{{item.entry_day}}</td> -->
         </tr>
         {% endfor %}
       </tbody>

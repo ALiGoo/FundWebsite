@@ -50,11 +50,11 @@ def test_respoonse(request, start, end, investement_type, ratio, btest_time, mon
                         frequency=frequency)
     return JsonResponse(response_data)
 
-
 def index(request):
     engine = create_engine('sqlite:///fund.db')
     items = pd.read_sql(
         sql='select * from basic_information limit 10', con=engine)
+    items['url'] = "id=" + items['fund_id'] + "&area=" + items['area']
     items = items.to_dict('records', into=defaultdict(list))
     return render(request, "index.html", locals())
 
@@ -62,15 +62,29 @@ def index(request):
 def index_response(request, page):
     items = pd.read_sql(
         sql='select * from basic_information limit ?,10', con=engine, params=[(page-1)*10])
+    items['url'] = "id=" + items['fund_id'] + "&area=" + items['area']
     items = items.to_dict('index')
     return JsonResponse(items)
 
 
 def search(request, column, keyword):
     items = pd.read_sql(sql='select * from basic_information', con=engine)
+    temp = items[column].str.lower()
     if "fee" in column:
         items = items[items[column] <= float(keyword)]
     else:
-        items = items[items[column].str.contains(keyword)]
+        items = items[temp.str.contains(keyword.lower())]
+    items['url'] = "id=" + items['fund_id'] + "&area=" + items['area']
     items = items.to_dict('index')
     return JsonResponse(items)
+def index_form(request, fund_id, area):
+    if area == "境內":
+        item = pd.read_sql("select * from basic_information,domestic_information where basic_information.fund_id = ? and domestic_information.fund_id = ?",
+        con=engine, params=[fund_id,fund_id])
+    else:
+        item = pd.read_sql("select * from basic_information,overseas_information where basic_information.fund_id = ? and overseas_information.fund_id = ?",
+        con=engine, params=[fund_id,fund_id])
+
+    item = item.drop(["fund_id"],axis=1)
+    item = item.to_dict('records', into=defaultdict(list))
+    return render(request, "index_form.html", locals())
