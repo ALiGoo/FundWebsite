@@ -205,5 +205,3 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
     script, div = components(p, CDN)
     response_data['profit_img'] = {'script': script, 'div': div}
     return response_data
-
-
