@@ -68,9 +68,24 @@ def index_response(request, page):
 
 def search(request, column, keyword):
     items = pd.read_sql(sql='select * from basic_information', con=engine)
+    temp = items[column].str.lower()
     if "fee" in column:
         items = items[items[column] <= float(keyword)]
     else:
-        items = items[items[column].str.contains(keyword)]
+        items = items[temp.str.contains(keyword.lower())]
     items = items.to_dict('index')
     return JsonResponse(items)
+
+
+def index_form(request, fund_id, area):
+    if area == "境內":
+        item = pd.read_sql("select * from basic_information,domestic_information where basic_information.fund_id = ? and domestic_information.fund_id = ?",
+        con=engine, params=[fund_id,fund_id])
+    else:
+        item = pd.read_sql("select * from basic_information,overseas_information where basic_information.fund_id = ? and overseas_information.fund_id = ?",
+        con=engine, params=[fund_id,fund_id])
+
+    item = item.drop(["fund_id"],axis=1)
+    item = item.to_dict('index')
+    # return render(request, "index_form", locals())
+    return JsonResponse(item)
