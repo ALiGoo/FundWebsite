@@ -4,15 +4,12 @@ $(function () {
       $.getJSON("/index/p=" + page, function (ret) {
         var html = ""
         $.each(ret, function (i, item) {
-            html += "<tr>\
-            <td>" + item.fund_id + "</td>\
-            <td>" + item.chinese_name + "</td>\
-            <td>" + item.english_name + "</td>\
-            <td>" + item.isin_code + "</td>\
-            <td>" + item.entry_day + "</td>\
+            html += '<tr>\
+            <td><a href="' + item.url + '">' + item.fund_id + "</td>\
             <td>" + item.manager_fee + "</td>\
             <td>" + item.custody_fee + "</td>\
             <td>" + item.sales_fee + "</td>\
+            <td>" + item.investment_target + "</td>\
             <td>" + item.area + "</td>\
             </tr>"
         });
@@ -52,15 +49,12 @@ $(function () {
       $.getJSON("/index/c=" + column + "&key=" + keyword, function (ret) {
         var html = ""
         $.each(ret, function (i, item) {
-            html += "<tr>\
-            <td>" + item.fund_id + "</td>\
-            <td>" + item.chinese_name + "</td>\
-            <td>" + item.english_name + "</td>\
-            <td>" + item.isin_code + "</td>\
-            <td>" + item.entry_day + "</td>\
+            html += '<tr>\
+            <td><a href="' + item.url + '">' + item.fund_id + "</td>\
             <td>" + item.manager_fee + "</td>\
             <td>" + item.custody_fee + "</td>\
             <td>" + item.sales_fee + "</td>\
+            <td>" + item.investment_target + "</td>\
             <td>" + item.area + "</td>\
             </tr>"
         });
@@ -68,5 +62,9 @@ $(function () {
     });
   //}else {alert(msg);}
   });
-
 });
+
+// <td>" + item.chinese_name + "</td>\
+// <td>" + item.english_name + "</td>\
+// <td>" + item.isin_code + "</td>\
+// <td>" + item.entry_day + "</td>\
