@@ -77,8 +77,6 @@ def search(request, column, keyword):
     items['url'] = "id=" + items['fund_id'] + "&area=" + items['area']
     items = items.to_dict('index')
     return JsonResponse(items)
-
-
 def index_form(request, fund_id, area):
     if area == "境內":
         item = pd.read_sql("select * from basic_information,domestic_information where basic_information.fund_id = ? and domestic_information.fund_id = ?",
