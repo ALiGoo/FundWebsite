@@ -50,7 +50,6 @@ def test_respoonse(request, start, end, investement_type, ratio, btest_time, mon
                         frequency=frequency)
     return JsonResponse(response_data)
 
-
 def index(request):
     engine = create_engine('sqlite:///fund.db')
     items = pd.read_sql(
@@ -63,6 +62,7 @@ def index(request):
 def index_response(request, page):
     items = pd.read_sql(
         sql='select * from basic_information limit ?,10', con=engine, params=[(page-1)*10])
+    items['url'] = "id=" + items['fund_id'] + "&area=" + items['area']
     items = items.to_dict('index')
     return JsonResponse(items)
 
