@@ -62,6 +62,9 @@ def selection(start, btest_time, investement_type, i, sharpe_ratio, std, beta, t
                    indicator_βp > treynor_ratio)
 
     data_df = data_df.T[bl].T
+    data_df = data_df.pct_change()
+    data_df_std = data_df.std()
+    data_df = data_df.drop(data_df_std[data_df_std == 0].index.values, axis = 1)
     data_df = data_df.corr()
     data_df = 1 - data_df * 0.5 - 0.5
 
@@ -158,9 +161,10 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
         data_df = pd.concat([data_df[choose], data_df.T.sample(
             n=296).T], axis=1).T.drop_duplicates().T
         data_df = data_df.pct_change()
+        data_df_std = data_df.std()
+        data_df = data_df.drop(data_df_std[data_df_std == 0].index.values, axis = 1)
         data_df = data_df.corr()
         data_df = 1 - data_df * 0.5 - 0.5
-        data_df = data_df.fillna(-1)
 
         response_data['mean_similarity'] += np.square(
             data_df[choose].T[choose].sum().sum()/2)
