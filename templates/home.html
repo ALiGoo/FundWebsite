@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <title>Home</title>
+  {% load staticfiles %}
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="//apps.bdimg.com/libs/jqueryui/1.10.4/css/jquery-ui.min.css">
+  <script src="//apps.bdimg.com/libs/jquery/1.10.2/jquery.min.js"></script>
+  <script src="//apps.bdimg.com/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+  <!-- <link rel="stylesheet" href="jqueryui/style.css"> -->
+</head>
+
+<body>
+  <form action="." method="POST" name="form1">
+    {% csrf_token %}
+
+    <div class="date-box">
+      <h1>Fund</h1>
+      <div class="textbox">
+        <i class="fas fa-calendar-alt"></i>
+        <input type="text" placeholder="Start Date" class="datepicker" name="start" >
+      </div>
+
+      <div class="textbox">
+        <i class="fas fa-calendar-alt"></i>
+        <input type="text" placeholder="End Date" class="datepicker" name="end" >
+      </div>
+      <input type="submit" class="btn" name="button" id="button" value="Search">
+    </div>
+
+  </form>
+  <script src="{% static "javascript/home.js" %}"></script>
+</body>
+
+</html>
