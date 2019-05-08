@@ -1,7 +1,9 @@
 import pandas as pd
 import numpy as np
 import time
+import math
 
+from business_calendar import Calendar
 from sklearn.manifold import MDS
 from sklearn.cluster import AgglomerativeClustering
 from sqlalchemy import create_engine
@@ -64,7 +66,7 @@ def selection(start, btest_time, investement_type, i, sharpe_ratio, std, beta, t
     data_df = data_df.T[bl].T
     data_df = data_df.pct_change()
     data_df_std = data_df.std()
-    data_df = data_df.drop(data_df_std[data_df_std == 0].index.values, axis = 1)
+    data_df = data_df.drop(data_df_std[data_df_std == 0].index.values, axis=1)
     data_df = data_df.corr()
     data_df = 1 - data_df * 0.5 - 0.5
 
@@ -100,6 +102,22 @@ def profit_indicator(profit, start, end, response_data):
     response_data['beta'] = indicator_βp
     response_data['treynor_ratio'] = (
         (profit.iloc[-1] - 0.01) / indicator_βp)[0]
+
+
+def price_simulation(end, price, response_data):
+    start = end + relativedelta(months=+1)
+    end = end + relativedelta(years=5, months=+1)
+    days = Calendar().busdaycount(start, end)
+    years = (end - start).days / 365.25
+    Δt = years / days
+
+    price = pd.DataFrame({'price': price}, index=[
+                         i for i in range((end - start).days)])
+    for i in range((end - start).days - 1):
+        price.iloc[i+1] = price.iloc[i] * (1 + response_data['profit'] / 100
+                                           * Δt + np.random.randn() * response_data['std'] * math.sqrt(Δt))
+    response_data["simulation"] = (
+        ((price / price.iloc[0]) - 1) * 100).iloc[-1].values[0]
 
 
 def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, btest_time, money, buy_ratio, strategy, frequency):
@@ -158,11 +176,14 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
         if i == length-1:
             response_data['money'] = (hold * data_df.iloc[-1][choose]).sum()
 
+        price = data_df[choose].iloc[-1].mean()
+
         data_df = pd.concat([data_df[choose], data_df.T.sample(
             n=296).T], axis=1).T.drop_duplicates().T
         data_df = data_df.pct_change()
         data_df_std = data_df.std()
-        data_df = data_df.drop(data_df_std[data_df_std == 0].index.values, axis = 1)
+        data_df = data_df.drop(
+            data_df_std[data_df_std == 0].index.values, axis=1)
         data_df = data_df.corr()
         data_df = 1 - data_df * 0.5 - 0.5
 
@@ -198,6 +219,7 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
 
     response_data['profit'] = profit.iloc[-1][0]
     response_data['mean_similarity'] /= length
+    price_simulation(end, price, response_data)
 
     profit.index = profit.index + 28800
     profit.index = pd.to_datetime(profit.index, unit='s')

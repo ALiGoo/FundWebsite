@@ -50,6 +50,7 @@ def test_respoonse(request, start, end, investement_type, ratio, btest_time, mon
                         frequency=frequency)
     return JsonResponse(response_data)
 
+
 def index(request):
     engine = create_engine('sqlite:///fund.db')
     items = pd.read_sql(
@@ -82,13 +83,13 @@ def search(request, column, keyword):
 def index_form(request, fund_id, area):
     if area == "境內":
         item = pd.read_sql("select * from basic_information,domestic_information where basic_information.fund_id = ? and domestic_information.fund_id = ?",
-        con=engine, params=[fund_id,fund_id])
-        item = item.drop(["fund_id"],axis=1)
+                           con=engine, params=[fund_id, fund_id])
+        item = item.drop(["fund_id"], axis=1)
         item = item.to_dict('records', into=defaultdict(list))
         return render(request, "index_form.html", locals())
     elif area == "境外":
         item = pd.read_sql("select * from basic_information,overseas_information where basic_information.fund_id = ? and overseas_information.fund_id = ?",
-        con=engine, params=[fund_id,fund_id])
-        item = item.drop(["fund_id"],axis=1)
+                           con=engine, params=[fund_id, fund_id])
+        item = item.drop(["fund_id"], axis=1)
         item = item.to_dict('records', into=defaultdict(list))
         return render(request, "index_oversea.html", locals())
