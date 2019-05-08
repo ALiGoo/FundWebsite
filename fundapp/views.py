@@ -50,7 +50,6 @@ def test_respoonse(request, start, end, investement_type, ratio, btest_time, mon
                         frequency=frequency)
     return JsonResponse(response_data)
 
-
 def index(request):
     engine = create_engine('sqlite:///fund.db')
     items = pd.read_sql(
