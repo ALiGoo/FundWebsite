@@ -119,7 +119,7 @@ def price_simulation(end, price, response_data):
     response_data["simulation"] = (
         ((price / price.iloc[0]) - 1) * 100).iloc[-1].values[0]
     
-    p = figure(plot_width=1500, plot_height=300, title="Predict Price", toolbar_location=None, tools="")
+    p = figure(plot_width=940, plot_height=300, title="Predict Price", toolbar_location=None, tools="")
     p.line([i+1 for i in range(len(price))], price["price"].values, line_width=2)
     script, div = components(p, CDN)
     response_data['predict_price'] = {'script': script, 'div': div}
@@ -232,7 +232,7 @@ def img(start, end, investement_type, sharpe_ratio, std, beta, treynor_ratio, bt
     totalStock.date = totalStock.date.astype('datetime64')
     totalStock = totalStock[(totalStock.date < end + relativedelta(months=1)) & (totalStock.date >= start)]
     totalStock.profit = ((totalStock.profit / totalStock.iloc[0].profit) - 1) * 100
-    p = figure(x_axis_type="datetime", plot_width=1500,
+    p = figure(x_axis_type="datetime", plot_width=940,
                plot_height=300, title="Profit", toolbar_location=None, tools="")
     p.line(x='date', y='profit', line_width=3, source=profit, color = 'red', legend='Choose')
     p.add_tools(HoverTool(tooltips=[("date", "@date{%F}"), ("profit", "@profit%")],
