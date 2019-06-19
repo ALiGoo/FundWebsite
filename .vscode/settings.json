@@ -1,4 +1,6 @@
 {
-    "python.linting.pylintEnabled": true,
-    "python.pythonPath": "/home/xiangli/anaconda3/envs/djangoEnv/bin/python"
+    "python.linting.pylintEnabled": false,
+    "python.pythonPath": "/home/xiangli/anaconda3/envs/DjangoEnv/bin/python",
+    "python.linting.flake8Enabled": true,
+    "python.linting.enabled": true
 }

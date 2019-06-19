@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 from django.http import JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 from fundapp.profit_test import img
 from datetime import datetime
 from sqlalchemy import create_engine
@@ -49,6 +49,7 @@ def test_respoonse(request, start, end, investement_type, ratio, btest_time, mon
                         strategy=strategy,
                         frequency=frequency)
     return JsonResponse(response_data)
+
 
 def index(request):
     engine = create_engine('sqlite:///fund.db')
